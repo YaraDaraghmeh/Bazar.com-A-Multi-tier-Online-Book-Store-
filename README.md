@@ -1,1 +1,1 @@
-# -Bazar.com-A-Multi-tier-Online-Book-Store-
+# Bazar.com-A-Multi-tier-Online-Book-Store-
