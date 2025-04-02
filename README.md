@@ -51,7 +51,7 @@ The application uses Flask for the web framework with a REST API interface and D
 1. Clone the repository:
    ```bash
    git clone https://github.com/YaraDaraghmeh/Bazar.com-A-Multi-tier-Online-Book-Store-.git
-   cd bazar-bookstore
+   cd Bazar.com-A-Multi-tier-Online-Book-Store-
    ```
 
 2. Build and start the containers:
