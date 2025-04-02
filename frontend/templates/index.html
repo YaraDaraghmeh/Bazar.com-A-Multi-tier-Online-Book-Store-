@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bazar.com - The World's Smallest Book Store</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+        h1 { color: #2c3e50; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .section { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        button { background-color: #3498db; color: white; border: none; padding: 10px 15px; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #2980b9; }
+        input, select { padding: 8px; margin-right: 10px; }
+        #results { margin-top: 20px; }
+        .book-item { padding: 10px; border-bottom: 1px solid #eee; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bazar.com</h1>
+        <p>The World's Smallest Book Store</p>
+        
+        <div class="section">
+            <h2>Search by Topic</h2>
+            <select id="topic">
+                <option value="distributed systems">Distributed Systems</option>
+                <option value="undergraduate school">Undergraduate School</option>
+            </select>
+            <button onclick="searchBooks()">Search</button>
+            <div id="searchResults"></div>
+        </div>
+        
+        <div class="section">
+            <h2>Book Information</h2>
+            <input type="number" id="bookId" placeholder="Enter Book ID" min="1" max="4">
+            <button onclick="getBookInfo()">Get Info</button>
+            <div id="bookInfo"></div>
+        </div>
+        
+        <div class="section">
+            <h2>Purchase Book</h2>
+            <input type="number" id="purchaseId" placeholder="Enter Book ID" min="1" max="4">
+            <button onclick="purchaseBook()">Purchase</button>
+            <div id="purchaseResult"></div>
+        </div>
+    </div>
+
+    <script>
+        async function searchBooks() {
+            const topic = document.getElementById('topic').value;
+            const resultsDiv = document.getElementById('searchResults');
+            resultsDiv.innerHTML = 'Loading...';
+            
+            try {
+                const response = await fetch(`/api/search/${encodeURIComponent(topic)}`);
+                const data = await response.json();
+                console.log(response);
+                if (data.length === 0) {
+                    resultsDiv.innerHTML = 'No books found for this topic.';
+                    return;
+                }
+                
+                let html = '<h3>Search Results:</h3>';
+                data.forEach(book => {
+                    html += `<div class="book-item">ID: ${book.id} - ${book.title}</div>`;
+                });
+                
+                resultsDiv.innerHTML = html;
+            } catch (error) {
+                resultsDiv.innerHTML = 'Error searching books.';
+                console.error(error);
+            }
+        }
+        
+        async function getBookInfo() {
+            const bookId = document.getElementById('bookId').value;
+            const infoDiv = document.getElementById('bookInfo');
+            
+            if (!bookId) {
+                infoDiv.innerHTML = 'Please enter a book ID.';
+                return;
+            }
+            
+            infoDiv.innerHTML = 'Loading...';
+            
+            try {
+                const response = await fetch(`/api/info/${bookId}`);
+                const data = await response.json();
+                console.log(response);
+                if (data.error) {
+                    infoDiv.innerHTML = data.error;
+                    return;
+                }
+                
+                infoDiv.innerHTML = `
+                    <h3>${data.title}</h3>
+                    <p>Price: $${data.price}</p>
+                    <p>In Stock: ${data.quantity}</p>
+                `;
+            } catch (error) {
+                infoDiv.innerHTML = 'Error fetching book information.';
+                console.error(error);
+            }
+        }
+        
+        async function purchaseBook() {
+            const bookId = document.getElementById('purchaseId').value;
+            const resultDiv = document.getElementById('purchaseResult');
+            
+            if (!bookId) {
+                resultDiv.innerHTML = 'Please enter a book ID.';
+                return;
+            }
+            
+            resultDiv.innerHTML = 'Processing purchase...';
+            
+            try {
+                const response = await fetch(`/api/purchase/${bookId}`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                console.log(response);
+                if (data.error) {
+                    resultDiv.innerHTML = `Error: ${data.error}`;
+                    return;
+                }
+                
+                resultDiv.innerHTML = `Successfully purchased: ${data.book_title}. Order ID: ${data.order_id}`;
+                console.log(data);
+            } catch (error) {
+                resultDiv.innerHTML = 'Error processing purchase.';
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
