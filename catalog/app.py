@@ -41,3 +41,16 @@ def query_by_subject(topic):
     results = [{'id': book['id'], 'title': book['title']} 
               for book in books if book['topic'].lower() == topic.lower()]
     return jsonify(results)
+
+
+@app.route('/info/<int:item_id>', methods=['GET'])
+def query_by_item(item_id):
+    books = read_books()
+    for book in books:
+        if book['id'] == item_id:
+            return jsonify({
+                'title': book['title'],
+                'quantity': book['quantity'],
+                'price': book['price']
+            })
+    return jsonify({'error': 'Book not found'}), 404
