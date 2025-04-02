@@ -69,3 +69,9 @@ def purchase(item_id):
         'order_id': order_id,
         'book_title': book_info['title']
     })
+
+
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5001)
