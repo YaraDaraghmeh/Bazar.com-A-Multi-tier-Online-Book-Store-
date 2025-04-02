@@ -35,3 +35,37 @@ def write_order(book_id):
         writer = csv.writer(file)
         writer.writerow([new_id, book_id, datetime.now().isoformat()])
     return new_id
+
+
+
+
+
+@app.route('/purchase/<int:item_id>', methods=['POST'])
+def purchase(item_id):
+    catalog_url = f"http://catalog:5000/info/{item_id}"
+    response = requests.get(catalog_url)
+    
+    if response.status_code != 200:
+        return jsonify({'error': 'Book not found'}), 404
+    
+    book_info = response.json()
+    if book_info['quantity'] <= 0:
+        return jsonify({'error': 'Book out of stock'}), 400
+    
+    update_url = f"http://catalog:5000/update/{item_id}"
+    update_response = requests.put(
+        update_url, 
+        json={'quantity_change': -1},
+        headers={'Content-Type': 'application/json'}
+    )
+    
+    if update_response.status_code != 200:
+        return jsonify({'error': 'Failed to update inventory'}), 500
+    
+    order_id = write_order(item_id)
+    
+    return jsonify({
+        'status': 'success',
+        'order_id': order_id,
+        'book_title': book_info['title']
+    })
