@@ -69,5 +69,5 @@ def query_by_item(item_id):
             })
     return jsonify({'error': 'Book not found'}), 404
 
- if __name__ == '__main__':
+if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
