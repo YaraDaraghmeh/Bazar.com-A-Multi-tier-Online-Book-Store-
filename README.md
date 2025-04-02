@@ -31,13 +31,42 @@ The application uses Flask for the web framework with a REST API interface and D
 - Persistent data storage using CSV files
 - Containerized microservices for easy deployment
 
-## Technologies Used
+Technologies Used
+Flask
+Flask is a micro web framework written in Python that we've used for all three services. Some key aspects of how we've utilized Flask:
 
-- **Python 3.9**: Core programming language
-- **Flask**: Lightweight web framework
-- **Docker**: Containerization platform
-- **Docker Compose**: Multi-container orchestration
-- **CSV**: Simple data persistence
+RESTful API Design: Created clear endpoint routes following REST principles for each service
+Blueprint Organization: Logical organization of code for maintainability
+Lightweight Processing: Minimal overhead for handling requests between microservices
+JSON Response Handling: Standardized JSON responses across all API endpoints
+Simple Request Processing: Used Flask's request object to handle incoming data
+
+Flask was chosen for its simplicity and flexibility, making it ideal for microservices. It doesn't impose a specific structure or dependencies, allowing each service to be truly independent and focused on its specific responsibility.
+Docker & Docker Compose
+Docker containerization is used to package each microservice with its dependencies:
+
+Isolated Environments: Each service runs in its own container with specific dependencies
+Networking: Docker Compose creates a custom network allowing services to communicate by name
+Volume Mapping: Persistent data is stored in mapped volumes for CSV files
+Reproducibility: Consistent environment across development and deployment
+Scalability: Services can be scaled independently as needed
+Zero-Configuration Deployment: Environment variables and service discovery handled automatically
+
+CSV for Data Storage
+We've implemented a simple persistence layer using CSV files:
+
+Lightweight: No database setup required
+Human-Readable: Easy to inspect and modify data directly if needed
+Portable: Data can be easily backed up or transferred
+File Locking: Implemented to handle concurrent access
+Schema Definition: Clear column definitions for data integrity
+
+Python Libraries
+
+Requests: HTTP library for service-to-service communication
+Flask-CORS: Cross-Origin Resource Sharing support
+CSV Module: Python's built-in CSV handling for data persistence
+JSON: Used for standardized data exchange between services
 
 ## Running the Application
 
