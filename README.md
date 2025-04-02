@@ -162,8 +162,7 @@ Potential enhancements:
 
 ## Contributors
 
-- Your Name - [GitHub Profile](https://github.com/yourusername)
+- Yara - (https://github.com/YaraDaraghmeh)
+- Shams - (https://github.com/ShamsAziz03)
 
-## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
