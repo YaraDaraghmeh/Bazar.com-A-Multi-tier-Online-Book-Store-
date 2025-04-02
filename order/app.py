@@ -24,3 +24,14 @@ def read_orders():
             row['book_id'] = int(row['book_id'])
             orders.append(row)
     return orders
+
+def write_order(book_id):
+    orders = read_orders()
+    new_id = 1
+    if orders:
+        new_id = max(order['id'] for order in orders) + 1
+    
+    with open(DATA_FILE, 'a', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow([new_id, book_id, datetime.now().isoformat()])
+    return new_id
