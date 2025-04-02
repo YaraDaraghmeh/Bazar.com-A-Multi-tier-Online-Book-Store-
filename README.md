@@ -31,42 +31,47 @@ The application uses Flask for the web framework with a REST API interface and D
 - Persistent data storage using CSV files
 - Containerized microservices for easy deployment
 
-Technologies Used
-Flask
+## Technologies Used
+
+### Flask
+
 Flask is a micro web framework written in Python that we've used for all three services. Some key aspects of how we've utilized Flask:
 
-RESTful API Design: Created clear endpoint routes following REST principles for each service
-Blueprint Organization: Logical organization of code for maintainability
-Lightweight Processing: Minimal overhead for handling requests between microservices
-JSON Response Handling: Standardized JSON responses across all API endpoints
-Simple Request Processing: Used Flask's request object to handle incoming data
+- **RESTful API Design**: Created clear endpoint routes following REST principles for each service
+- **Blueprint Organization**: Logical organization of code for maintainability
+- **Lightweight Processing**: Minimal overhead for handling requests between microservices
+- **JSON Response Handling**: Standardized JSON responses across all API endpoints
+- **Simple Request Processing**: Used Flask's request object to handle incoming data
 
 Flask was chosen for its simplicity and flexibility, making it ideal for microservices. It doesn't impose a specific structure or dependencies, allowing each service to be truly independent and focused on its specific responsibility.
-Docker & Docker Compose
+
+### Docker & Docker Compose
+
 Docker containerization is used to package each microservice with its dependencies:
 
-Isolated Environments: Each service runs in its own container with specific dependencies
-Networking: Docker Compose creates a custom network allowing services to communicate by name
-Volume Mapping: Persistent data is stored in mapped volumes for CSV files
-Reproducibility: Consistent environment across development and deployment
-Scalability: Services can be scaled independently as needed
-Zero-Configuration Deployment: Environment variables and service discovery handled automatically
+- **Isolated Environments**: Each service runs in its own container with specific dependencies
+- **Networking**: Docker Compose creates a custom network allowing services to communicate by name
+- **Volume Mapping**: Persistent data is stored in mapped volumes for CSV files
+- **Reproducibility**: Consistent environment across development and deployment
+- **Scalability**: Services can be scaled independently as needed
+- **Zero-Configuration Deployment**: Environment variables and service discovery handled automatically
 
-CSV for Data Storage
+### CSV for Data Storage
+
 We've implemented a simple persistence layer using CSV files:
 
-Lightweight: No database setup required
-Human-Readable: Easy to inspect and modify data directly if needed
-Portable: Data can be easily backed up or transferred
-File Locking: Implemented to handle concurrent access
-Schema Definition: Clear column definitions for data integrity
+- **Lightweight**: No database setup required
+- **Human-Readable**: Easy to inspect and modify data directly if needed
+- **Portable**: Data can be easily backed up or transferred
+- **File Locking**: Implemented to handle concurrent access
+- **Schema Definition**: Clear column definitions for data integrity
 
-Python Libraries
+### Python Libraries
 
-Requests: HTTP library for service-to-service communication
-Flask-CORS: Cross-Origin Resource Sharing support
-CSV Module: Python's built-in CSV handling for data persistence
-JSON: Used for standardized data exchange between services
+- **Requests**: HTTP library for service-to-service communication
+- **Flask-CORS**: Cross-Origin Resource Sharing support
+- **CSV Module**: Python's built-in CSV handling for data persistence
+- **JSON**: Used for standardized data exchange between services
 
 ## Running the Application
 
@@ -143,6 +148,32 @@ The application uses CSV files for persistent storage:
 - `catalog/data/books.csv`: Stores book information
 - `order/data/orders.csv`: Stores order history
 
+### Implementation Details
+
+#### Frontend Service
+The frontend service provides both a web UI and API endpoints that proxy requests to the appropriate backend service. It's responsible for:
+
+- Rendering the HTML interface for users
+- Routing API requests to the correct backend service
+- Converting between API formats when necessary
+- Providing a unified interface for the client
+
+#### Catalog Service
+The catalog service manages the book inventory with these key responsibilities:
+
+- Searching books by topic
+- Providing detailed book information
+- Updating inventory when purchases are made
+- Maintaining price information
+
+#### Order Service
+The order service handles all purchase-related logic:
+
+- Verifying item availability by communicating with the catalog service
+- Recording successful purchases with timestamps
+- Updating inventory by communicating with the catalog service
+- Generating unique order IDs
+  
 ## Testing
 
 ### Manual Testing
@@ -171,12 +202,25 @@ The application uses CSV files for persistent storage:
 | Purchase a book | ID: 1 | Success message and reduced inventory count |
 | Purchase out-of-stock book | ID of out-of-stock book | Error message |
 
+### Error Handling
+
+The application includes robust error handling:
+
+- **Input Validation**: Checks for valid book IDs and data formats
+- **Inventory Validation**: Verifies stock levels before completing purchases
+- **Service Unavailability**: Graceful handling when a service is down
+- **Concurrency Issues**: Prevents race conditions when multiple purchases occur simultaneously
+
+
 ## Design Decisions & Tradeoffs
 
 - **CSV over Database**: Chose CSV files for simplicity and portability, sacrificing query performance
 - **Microservice Architecture**: Enables independent scaling and development but adds network complexity
 - **Docker Containerization**: Ensures consistent environments but requires Docker knowledge
 - **Flask**: Lightweight framework that's easy to learn but lacks some features of larger frameworks
+- **REST API Design**: Standardized interface but requires more HTTP requests than more optimized protocols
+- **No Authentication**: Simplified implementation but lacks security features needed in production
+
 
 ## Extending the Project
 
@@ -184,14 +228,21 @@ Potential enhancements:
 
 - Add user authentication system
 - Implement a shopping cart feature
-- Add a database backend (e.g., SQLite)
+- Replace CSV with a database backend (e.g., SQLite, PostgreSQL)
 - Create admin interface for inventory management
 - Add unit and integration tests
 - Implement CI/CD pipeline
+- Add logging and monitoring
+- Add rate limiting for API endpoints
+- Implement caching for frequently accessed data
 
+## Performance Considerations
+
+- **Service Communication**: Direct HTTP calls between services are simple but could be replaced with message queues for better reliability
+- **Data Storage**: CSV files work for small data volumes but would need replacement for production scale
+- **Concurrency**: Basic file locking is implemented but could be enhanced with proper database transactions
+- **Caching**: No caching is currently implemented, which could be added for improved performance
 ## Contributors
 
 - Yara - (https://github.com/YaraDaraghmeh)
 - Shams - (https://github.com/ShamsAziz03)
-
-
