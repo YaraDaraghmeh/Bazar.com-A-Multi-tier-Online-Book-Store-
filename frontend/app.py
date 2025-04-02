@@ -20,3 +20,11 @@ def search(topic):
 def info(item_id):
     response = requests.get(f"{CATALOG_SERVICE_URL}/info/{item_id}")
     return jsonify(response.json())
+
+@app.route('/api/purchase/<int:item_id>', methods=['POST'])
+def purchase(item_id):
+    response = requests.post(f"{ORDER_SERVICE_URL}/purchase/{item_id}")
+    return jsonify(response.json()), response.status_code
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5002)
