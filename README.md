@@ -1,7 +1,7 @@
-# Bazar.com-A-Multi-tier-Online-Book-Store
+
 # Bazar.com: Multi-tier Online Book Store
 
-![Bazar.com Logo](https://via.placeholder.com/800x200/3498db/ffffff?text=Bazar.com)
+
 
 ## Overview
 
@@ -15,7 +15,6 @@ The application uses Flask for the web framework with a REST API interface and D
 
 ## Architecture
 
-![Architecture Diagram](https://via.placeholder.com/800x400/f5f5f5/333333?text=Bazar.com+Architecture)
 
 ### Key Components
 
