@@ -14,7 +14,7 @@ def index():
 @app.route('/api/search/<topic>', methods=['GET'])
 def search(topic):
     response = requests.get(f"{CATALOG_SERVICE_URL}/search/{topic}")
-
+    return jsonify(response.json())
 
 @app.route('/api/info/<int:item_id>', methods=['GET'])
 def info(item_id):
