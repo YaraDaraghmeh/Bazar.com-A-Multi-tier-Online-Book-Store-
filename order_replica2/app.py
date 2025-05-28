@@ -37,7 +37,6 @@ def read_orders():
             orders.append(row)
     return orders
 
-
 def write_order(book_id):
     orders = read_orders()
     new_id = 1
