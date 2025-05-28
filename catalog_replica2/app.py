@@ -16,3 +16,15 @@ if not os.path.exists(DATA_FILE):
         writer.writerow([2, 'RPCs for Noobs', 'distributed systems', 5, 50])
         writer.writerow([3, 'Xen and the Art of Surviving Undergraduate School', 'undergraduate school', 8, 30])
         writer.writerow([4, 'Cooking for the Impatient Undergrad', 'undergraduate school', 12, 25])
+
+
+def read_books():
+    books = []
+    with open(DATA_FILE, 'r') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            row['id'] = int(row['id'])
+            row['quantity'] = int(row['quantity'])
+            row['price'] = float(row['price'])
+            books.append(row)
+    return books
