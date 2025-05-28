@@ -47,3 +47,48 @@ def query_by_subject(topic):
               for book in books if book['topic'].lower() == topic.lower()]
     return jsonify(results)
 
+
+
+@app.route('/update/<int:item_id>', methods=['PUT'])
+def update_item(item_id):
+    data = request.json
+    books = read_books()
+  
+
+    #send update req to catalog replica 1
+    update_url1 = f"http://catalog_replica1:5003/update/{item_id}"
+    update_response1 = requests.put(
+        update_url1, 
+        json={'quantity_change': -1},
+        headers={'Content-Type': 'application/json'}
+    )
+    if update_response1.status_code != 200:
+        return jsonify({'error': 'Failed to update catalog replica 1'}), 500
+    
+
+    
+    #send update req to catalog replica 2
+    update_url2 = f"http://catalog_replica2:5004/update/{item_id}"
+    update_response2 = requests.put(
+        update_url2, 
+        json={'quantity_change': -1},
+        headers={'Content-Type': 'application/json'}
+    )
+    if update_response2.status_code != 200:
+        return jsonify({'error': 'Failed to update catalog replica 2'}), 500
+    
+
+
+    for book in books:
+        if book['id'] == item_id:
+            if 'price' in data:
+                book['price'] = float(data['price'])
+            if 'quantity_change' in data:
+                book['quantity'] += int(data['quantity_change'])
+                if book['quantity'] < 0:
+                    book['quantity'] = 0
+            write_books(books)
+            return jsonify({'status': 'success'})
+    
+    return jsonify({'error': 'Book not found'}), 404
+
