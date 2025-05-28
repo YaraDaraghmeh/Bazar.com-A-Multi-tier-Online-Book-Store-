@@ -142,6 +142,7 @@ def sync_order():
     if not data or 'id' not in data or 'book_id' not in data or 'timestamp' not in data:
         return jsonify({'error': 'Invalid data'}), 400
 
+
     orders = read_orders()
     # Prevent duplicate orders
     if any(order['id'] == int(data['id']) for order in orders):
