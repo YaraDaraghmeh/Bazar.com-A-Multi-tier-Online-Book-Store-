@@ -107,5 +107,24 @@ def purchase(item_id):
         'book_title': book_info['title']
     })
 
+
+@app.route('/sync_order', methods=['POST'])
+def sync_order():
+    data = request.get_json()
+    if not data or 'id' not in data or 'book_id' not in data or 'timestamp' not in data:
+        return jsonify({'error': 'Invalid data'}), 400
+
+    orders = read_orders()
+    # Prevent duplicate orders
+    if any(order['id'] == int(data['id']) for order in orders):
+        return jsonify({'status': 'duplicate'}), 200
+
+    with open(DATA_FILE, 'a', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow([data['id'], data['book_id'], data['timestamp']])
+
+    return jsonify({'status': 'synced'}), 200
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5005)
