@@ -49,5 +49,63 @@ def write_order(book_id):
         writer.writerow([new_id, book_id, datetime.now().isoformat()])
     return new_id
 
+def get_next_catalog_url():
+    global catalog_index
+    url = catalog_replicas[catalog_index]
+    catalog_index = (catalog_index + 1) % len(catalog_replicas)
+    return url
+
+
+@app.route('/purchase/<int:item_id>', methods=['POST'])
+def purchase(item_id):
+    catalog_url = get_next_catalog_url()
+    response = requests.get(f"{catalog_url}/info/{item_id}")
+    
+    if response.status_code != 200:
+        return jsonify({'error': 'Book not found'}), 404
+    
+    book_info = response.json()
+    if book_info['quantity'] <= 0:
+        return jsonify({'error': 'Book out of stock'}), 400
+    
+    #send invalidate request to frontend
+    invalidate_response = requests.post(f"http://frontend:5002/invalidate/{item_id}")
+    if invalidate_response.status_code != 200:
+        return jsonify({'error': 'Failed to invalidate cache'}), 500
+
+    #send update req to catalog
+    update_url= f"http://catalog:5000/update/{item_id}"
+    update_response = requests.put(
+        update_url, 
+        json={'quantity_change': -1},
+        headers={'Content-Type': 'application/json'}
+    )
+    if update_response.status_code != 200:
+        return jsonify({'error': 'Failed to update inventory'}), 500
+    
+    order_id = write_order(item_id)
+    
+    #update the order list in other replicas
+   
+    for replica_url in replica_urls:
+        try:
+            sync_data = {
+            "id": order_id,
+            "book_id": item_id,
+            "timestamp": datetime.now().isoformat()
+        }
+            sync_resp = requests.post(f"{replica_url}/sync_order", json=sync_data)
+            if sync_resp.status_code != 200:
+                print(f"[Sync] Failed to sync with {replica_url}: {sync_resp.text}")
+        except requests.RequestException as e:
+            print(f"[Sync] Error syncing with {replica_url}: {e}")
+
+
+    return jsonify({
+        'status': 'success',
+        'order_id': order_id,
+        'book_title': book_info['title']
+    })
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5005)
