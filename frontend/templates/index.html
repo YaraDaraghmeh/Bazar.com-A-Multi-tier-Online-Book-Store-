@@ -3,133 +3,218 @@
 <head>
     <title>Bazar.com - The World's Smallest Book Store</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-        h1 { color: #2c3e50; }
-        .container { max-width: 800px; margin: 0 auto; }
-        .section { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
-        button { background-color: #3498db; color: white; border: none; padding: 10px 15px; cursor: pointer; margin-top: 10px; }
-        button:hover { background-color: #2980b9; }
-        input, select { padding: 8px; margin-right: 10px; }
-        #results { margin-top: 20px; }
-        .book-item { padding: 10px; border-bottom: 1px solid #eee; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        input, select {
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .loading {
+            display: none;
+            color: #666;
+            font-style: italic;
+        }
+        #results, #bookInfo, #purchaseResult {
+            margin-top: 20px;
+        }
+        .book-item {
+            padding: 10px;
+            background-color: white;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+            margin: 10px 0;
+        }
+        .cache-indicator {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        .cache-hit {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .cache-miss {
+            background-color: #fff3cd;
+            color: #856404;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Bazar.com</h1>
+        <h1>Bazar.com <span class="version-badge">v2.0</span></h1>
         <p>The World's Smallest Book Store</p>
-        
+
         <div class="section">
             <h2>Search by Topic</h2>
             <select id="topic">
                 <option value="distributed systems">Distributed Systems</option>
                 <option value="undergraduate school">Undergraduate School</option>
+                <option value="artificial intelligence">Artificial Intelligence</option>
+                <option value="databases">Databases</option>
             </select>
             <button onclick="searchBooks()">Search</button>
+            <span class="loading" id="searchLoading">Searching...</span>
             <div id="searchResults"></div>
         </div>
-        
+
         <div class="section">
             <h2>Book Information</h2>
-            <input type="number" id="bookId" placeholder="Enter Book ID" min="1" max="4">
+            <input type="number" id="bookId" placeholder="Enter Book ID" min="1" max="7">
             <button onclick="getBookInfo()">Get Info</button>
+            <span class="loading" id="infoLoading">Loading...</span>
             <div id="bookInfo"></div>
         </div>
-        
+
         <div class="section">
             <h2>Purchase Book</h2>
-            <input type="number" id="purchaseId" placeholder="Enter Book ID" min="1" max="4">
+            <input type="number" id="purchaseId" placeholder="Enter Book ID" min="1" max="7">
             <button onclick="purchaseBook()">Purchase</button>
+            <span class="loading" id="purchaseLoading">Processing...</span>
             <div id="purchaseResult"></div>
         </div>
     </div>
 
     <script>
+        let requestStartTime = 0;
+
+        function showLoading(id) {
+            document.getElementById(id).style.display = 'inline';
+            requestStartTime = Date.now();
+        }
+
+        function hideLoading(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
         async function searchBooks() {
             const topic = document.getElementById('topic').value;
             const resultsDiv = document.getElementById('searchResults');
-            resultsDiv.innerHTML = 'Loading...';
-            
+            showLoading('searchLoading');
+
             try {
                 const response = await fetch(`/api/search/${encodeURIComponent(topic)}`);
                 const data = await response.json();
-                console.log(response);
-                if (data.length === 0) {
+                const books = data.results;
+                hideLoading('searchLoading');
+
+                if (!books || books.length === 0) {
                     resultsDiv.innerHTML = 'No books found for this topic.';
                     return;
                 }
-                
+
                 let html = '<h3>Search Results:</h3>';
-                data.forEach(book => {
-                    html += `<div class="book-item">ID: ${book.id} - ${book.title}</div>`;
+                books.forEach(book => {
+                    html += `<div class="book-item">ID: ${book.id} - ${book.title}<br>
+                        <small>Topic: ${book.topic} | Price: ${book.price} | Stock: ${book.quantity}</small></div>`;
                 });
-                
-                resultsDiv.innerHTML = html;
+
+                const cacheHit = response.headers.get('X-Cache-Hit') === 'true';
+                const duration = Date.now() - requestStartTime;
+                const cacheIndicator = `<span class="cache-indicator ${cacheHit ? 'cache-hit' : 'cache-miss'}">
+                        ${cacheHit ? '⚡ Cache Hit' : '🌐 Cache Miss'} (${duration}ms)</span>`;
+                resultsDiv.innerHTML = html + cacheIndicator;
             } catch (error) {
+                hideLoading('searchLoading');
                 resultsDiv.innerHTML = 'Error searching books.';
-                console.error(error);
             }
         }
-        
+
         async function getBookInfo() {
             const bookId = document.getElementById('bookId').value;
             const infoDiv = document.getElementById('bookInfo');
-            
             if (!bookId) {
                 infoDiv.innerHTML = 'Please enter a book ID.';
                 return;
             }
-            
-            infoDiv.innerHTML = 'Loading...';
-            
+            showLoading('infoLoading');
             try {
                 const response = await fetch(`/api/info/${bookId}`);
                 const data = await response.json();
-                console.log(response);
-                if (data.error) {
-                    infoDiv.innerHTML = data.error;
+                const book = data.results;
+                hideLoading('infoLoading');
+
+                if (book.error) {
+                    infoDiv.innerHTML = book.error;
                     return;
                 }
-                
-                infoDiv.innerHTML = `
-                    <h3>${data.title}</h3>
-                    <p>Price: $${data.price}</p>
-                    <p>In Stock: ${data.quantity}</p>
-                `;
+
+                const cacheHit = response.headers.get('X-Cache-Hit') === 'true';
+                const duration = Date.now() - requestStartTime;
+                const cacheIndicator = `<span class="cache-indicator ${cacheHit ? 'cache-hit' : 'cache-miss'}">
+                        ${cacheHit ? '⚡ Cache Hit' : '🌐 Cache Miss'} (${duration}ms)</span>`;
+
+                infoDiv.innerHTML = `<h3>${book.title}</h3>
+                    <p>Price: $${book.price}</p>
+                    <p>In Stock: ${book.quantity}</p>
+                    ${cacheIndicator}`;
             } catch (error) {
+                hideLoading('infoLoading');
                 infoDiv.innerHTML = 'Error fetching book information.';
-                console.error(error);
             }
         }
-        
+
         async function purchaseBook() {
             const bookId = document.getElementById('purchaseId').value;
             const resultDiv = document.getElementById('purchaseResult');
-            
             if (!bookId) {
                 resultDiv.innerHTML = 'Please enter a book ID.';
                 return;
             }
-            
-            resultDiv.innerHTML = 'Processing purchase...';
-            
+            showLoading('purchaseLoading');
             try {
-                const response = await fetch(`/api/purchase/${bookId}`, {
-                    method: 'POST'
-                });
-                
+                const response = await fetch(`/api/purchase/${bookId}`, { method: 'POST' });
                 const data = await response.json();
-                console.log(response);
-                if (data.error) {
-                    resultDiv.innerHTML = `Error: ${data.error}`;
+                const result = data.results;
+                hideLoading('purchaseLoading');
+
+                if (result.error) {
+                    resultDiv.innerHTML = `Error: ${result.error}`;
                     return;
                 }
-                
-                resultDiv.innerHTML = `Successfully purchased: ${data.book_title}. Order ID: ${data.order_id}`;
-                console.log(data);
+
+                resultDiv.innerHTML = `Successfully purchased: ${result.book_title}. Order ID: ${result.order_id}`;
             } catch (error) {
+                hideLoading('purchaseLoading');
                 resultDiv.innerHTML = 'Error processing purchase.';
-                console.error(error);
             }
         }
     </script>
