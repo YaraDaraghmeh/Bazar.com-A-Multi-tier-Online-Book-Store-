@@ -45,3 +45,22 @@ def query_by_subject(topic):
     results = [{'id': book['id'], 'title': book['title']} 
               for book in books if book['topic'].lower() == topic.lower()]
     return jsonify(results)
+
+
+@app.route('/update/<int:item_id>', methods=['PUT'])
+def update_item(item_id):
+    data = request.json
+    books = read_books()
+
+    for book in books:
+        if book['id'] == item_id:
+            if 'price' in data:
+                book['price'] = float(data['price'])
+            if 'quantity_change' in data:
+                book['quantity'] += int(data['quantity_change'])
+                if book['quantity'] < 0:
+                    book['quantity'] = 0
+            write_books(books)
+            return jsonify({'status': 'success'})
+    
+    return jsonify({'error': 'Book not found'}), 404
