@@ -64,3 +64,19 @@ def update_item(item_id):
             return jsonify({'status': 'success'})
     
     return jsonify({'error': 'Book not found'}), 404
+
+  
+@app.route('/info/<int:item_id>', methods=['GET'])
+def query_by_item(item_id):
+    books = read_books()
+    for book in books:
+        if book['id'] == item_id:
+            return jsonify({
+                'title': book['title'],
+                'quantity': book['quantity'],
+                'price': book['price']
+            })
+    return jsonify({'error': 'Book not found'}), 404
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5004)
