@@ -31,6 +31,48 @@ services:
     networks:
       - bazar-network
 
+
+  catalog_replica1:
+    build: ./catalog_replica1
+    ports:
+      - "5003:5003"
+    volumes:
+      - ./catalog_replica1/data:/app/data
+    networks:
+      - bazar-network
+
+  catalog_replica2:
+    build: ./catalog_replica2
+    ports:
+      - "5004:5004"
+    volumes:
+      - ./catalog_replica2/data:/app/data
+    networks:
+      - bazar-network
+
+
+  order_replica1:
+    build: ./order_replica1
+    ports:
+      - "5005:5005"
+    volumes:
+      - ./order_replica1/data:/app/data
+    depends_on:
+      - catalog
+    networks:
+      - bazar-network
+
+  order_replica2:
+    build: ./order_replica2
+    ports:
+      - "5006:5006"
+    volumes:
+      - ./order_replica2/data:/app/data
+    depends_on:
+      - catalog
+    networks:
+      - bazar-network
+
 networks:
   bazar-network:
     driver: bridge
