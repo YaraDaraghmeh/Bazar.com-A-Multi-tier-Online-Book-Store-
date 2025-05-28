@@ -35,3 +35,12 @@ def write_books(books):
         writer.writeheader()
         writer.writerows(books)
     
+
+@app.route('/search/<topic>', methods=['GET'])
+def query_by_subject(topic):
+    if (topic==" ") or (topic==None):
+        return  jsonify(read_books())
+    books = read_books()
+    results = [{'id': book['id'], 'title': book['title']} 
+              for book in books if book['topic'].lower() == topic.lower()]
+    return jsonify(results)
